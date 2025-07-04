@@ -1,0 +1,31 @@
+body {
+    background-color: oklch(25.33% 0.016 252.42);
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: oklch(23.26% 0.014 253.1);
+    ;
+    color: white;
+  }
+
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-left a {
+    color: oklch(97.807% 0.029 256.847);
+    text-decoration: none;
+    padding: 8px 16px;
+    background-color: oklch(58% 0.233 277.117);
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
+
+  .navbar-left a:hover {
+    background-color: oklch(74% 0.16 232.661);
+  }
