@@ -11,7 +11,7 @@
                 <h1>La TO-DO Liste de Jules</h1>
             </div>
             <div class="nav-right">
-                <form action="/login" method="get">
+                <form action="/Disconnect" method="get">
                     <button type="submit" class="disconect-btn">Disconnect</button>
                 </form>
             </div>
@@ -20,16 +20,13 @@
     <div class="layout">
         <aside class="sidebar">
             <h2>Les Listes</h2>
-            <ul>
-                <li><a href="/liste1">Liste 1</a></li>
-                <li><a href="/liste2">Liste 2</a></li>
-                <li><a href="/liste3">Liste 3</a></li>
-            </ul>
+            <% Object.entries(lists).forEach(([listId, list]) => { %>
+                <button type="button" onclick="loadList(<%= Number(listId) %>)"><%= list.name %></button>
+              <% }) %>
         </aside>
     
         <main class="content">
-            <h1>Ma page</h1>
-            <p>La liste</p>
+            <div id="list-items-container"></div>
         </main>
     </div>
 </body>

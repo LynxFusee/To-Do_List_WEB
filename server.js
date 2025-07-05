@@ -12,20 +12,26 @@ app.get('/login', function (req, res){
     res.render('src/login')
 });
 
-app.get('/register', function (req, res){
-    res.render('src/register')
-});
-
 function getSessionId(req) {
     const cookie = req.headers.cookie || "";
     const match = cookie.match(/sessionId=([^;]+)/);
     return match ? match[1] : null;
 }
 
-app.get('/main', async (req, res) => {
-    const snapshot = await db.ref("messages").once("value");
-    const messages = snapshot.val() || {};
+app.get('/Disconnect', async (req, res) => {
+    const sessionId = getSessionId(req);
+    if (sessionId) {
+        await db.ref("Sessions/" + sessionId).remove();
+    }
+    res.setHeader("Set-Cookie", "sessionId=; Max-Age=0; Path=/");
+    res.render('src/login')
+});
 
+app.get('/register', function (req, res){
+    res.render('src/register')
+});
+
+app.get('/main', async (req, res) => {
     const sessionId = getSessionId(req);
     if (!sessionId) return res.redirect("/login");
     const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
@@ -41,15 +47,13 @@ app.get('/main', async (req, res) => {
       return res.redirect("/login?expired=1");
     }
 
-    res.render('src/index', { messages });
+    const userId = session.userId;
 
-});
-  
-  // Traitement du formulaire
-app.post('/envoyer', async (req, res) => {
-    const { auteur, contenu } = req.body;
-    await db.ref("messages").push({ auteur, contenu });
-    res.redirect('/main');
+    const snapshot = await db.ref(`Lists/${userId}`).once('value');
+    const lists = snapshot.val() || {};
+    res.render('src/index', { lists });
+
+
 });
 
 app.post("/register_form", async (req, res) => {
@@ -76,14 +80,18 @@ app.post("/login_form", async (req, res) => {
     try {
         const snapshot = await db.ref("Users").once("value");
         const users = snapshot.val();
-        const userFound = Object.values(users).some(user =>
-            user.Username === Username && user.Password === Password
-        );
+        let userId = null;
+        for (const [id, user] of Object.entries(users)) {
+            if (user.Username === Username && user.Password === Password) {
+            userId = id;
+            break;
+            }
+        }
 
-        if (userFound) {
+        if (userId!== null) {
             const sessionId = generateSessionId();
             await db.ref("Sessions/" + sessionId).set({
-                username: Username,
+                userId: userId,
                 createdAt: Date.now()
             });
             res.setHeader("Set-Cookie", `sessionId=${sessionId}; HttpOnly; Path=/`);
@@ -94,6 +102,46 @@ app.post("/login_form", async (req, res) => {
         }
     } catch (err) {
         console.error("Erreur Firebase :", err);
+    }
+});
+
+async function loadList(listId) {
+    try {
+        const response = await fetch(`/api/list/${listId}`);
+        if (!response.ok) throw new Error('Erreur de chargement');
+  
+        const data = await response.json();
+  
+      // Par exemple, afficher les éléments dans #list-items-container
+        const container = document.getElementById('list-items-container');
+        container.innerHTML = ''; // vider le contenu
+  
+        data.items.forEach(item => {
+            const el = document.createElement('div');
+            el.textContent = `${item.name} - ${item.completed ? '✔' : '✘'}`;
+            container.appendChild(el);
+        });
+  
+    }   catch (err)     {
+        alert(err.message);
+    }
+}
+
+app.get('/api/list/:listId', async (req, res) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+  
+    const listId = req.params.listId;
+    try {
+        const snapshot = await db.ref(`Lists/${userId}/${listId}`).once('value');
+        const listData = snapshot.val();
+  
+        if (!listData) return res.status(404).json({ error: 'Liste non trouvée' });
+  
+      // Suppose que la structure des éléments est dans listData.items
+        res.json({ items: listData.items || [] });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur serveur' });
     }
 });
 
