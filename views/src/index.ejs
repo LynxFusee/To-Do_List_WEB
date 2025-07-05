@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <title>To-Do Jules</title>
     <link href="css/style.css" rel="stylesheet"/>
@@ -22,7 +22,7 @@
             <h2>Les Listes</h2>
             <% Object.entries(lists).forEach(([listId, list]) => { %>
                 <button type="button" onclick="loadList(<%= Number(listId) %>)"><%= list.name %></button>
-              <% }) %>
+            <% }) %>
         </aside>
     
         <main class="content">

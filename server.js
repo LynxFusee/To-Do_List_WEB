@@ -31,6 +31,46 @@ app.get('/register', function (req, res){
     res.render('src/register')
 });
 
+async function loadList(listId) {
+    try {
+        const response = await fetch(`/api/list/${listId}`);
+        if (!response.ok) throw new Error('Erreur de chargement');
+  
+        const data = await response.json();
+  
+      // Par exemple, afficher les éléments dans #list-items-container
+        const container = document.getElementById('list-items-container');
+        container.innerHTML = ''; // vider le contenu
+  
+        data.items.forEach(item => {
+            const el = document.createElement('div');
+            el.textContent = `${item.name} - ${item.completed ? '✔' : '✘'}`;
+            container.appendChild(el);
+        });
+  
+    }   catch (err)     {
+        alert(err.message);
+    }
+}
+
+app.get('/api/list/:listId', async (req, res) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+  
+    const listId = req.params.listId;
+    try {
+        const snapshot = await db.ref(`Lists/${userId}/${listId}`).once('value');
+        const listData = snapshot.val();
+  
+        if (!listData) return res.status(404).json({ error: 'Liste non trouvée' });
+  
+      // Suppose que la structure des éléments est dans listData.items
+        res.json({ items: listData.items || [] });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
 app.get('/main', async (req, res) => {
     const sessionId = getSessionId(req);
     if (!sessionId) return res.redirect("/login");
@@ -57,7 +97,6 @@ app.get('/main', async (req, res) => {
 });
 
 app.post("/register_form", async (req, res) => {
-    console.log(req.body);
     const { Username, Password } = req.body;
     let maxUserId;
     await db.ref('Users').once('value').then(snapshot => {
@@ -105,45 +144,7 @@ app.post("/login_form", async (req, res) => {
     }
 });
 
-async function loadList(listId) {
-    try {
-        const response = await fetch(`/api/list/${listId}`);
-        if (!response.ok) throw new Error('Erreur de chargement');
-  
-        const data = await response.json();
-  
-      // Par exemple, afficher les éléments dans #list-items-container
-        const container = document.getElementById('list-items-container');
-        container.innerHTML = ''; // vider le contenu
-  
-        data.items.forEach(item => {
-            const el = document.createElement('div');
-            el.textContent = `${item.name} - ${item.completed ? '✔' : '✘'}`;
-            container.appendChild(el);
-        });
-  
-    }   catch (err)     {
-        alert(err.message);
-    }
-}
 
-app.get('/api/list/:listId', async (req, res) => {
-    const userId = req.session.userId;
-    if (!userId) return res.status(401).json({ error: 'Non autorisé' });
-  
-    const listId = req.params.listId;
-    try {
-        const snapshot = await db.ref(`Lists/${userId}/${listId}`).once('value');
-        const listData = snapshot.val();
-  
-        if (!listData) return res.status(404).json({ error: 'Liste non trouvée' });
-  
-      // Suppose que la structure des éléments est dans listData.items
-        res.json({ items: listData.items || [] });
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
 
 app.listen(8080);
 console.log("8080 pour le port bg")
