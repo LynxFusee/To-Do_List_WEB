@@ -1,7 +1,7 @@
 var express = require("express");
 const db = require('./firebase');
 var app = express();
-
+const ONE_HOUR = 60 * 60 * 1000;
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true}))
@@ -25,11 +25,22 @@ function getSessionId(req) {
 app.get('/main', async (req, res) => {
     const snapshot = await db.ref("messages").once("value");
     const messages = snapshot.val() || {};
+
     const sessionId = getSessionId(req);
     if (!sessionId) return res.redirect("/login");
     const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
     const session = sessionSnap.val();
     if (!session) return res.redirect("/login");
+
+    const now = Date.now();
+    if (now - session.createdAt > ONE_HOUR) {
+      await db.ref("Sessions/" + sessionId).remove();
+  
+      res.setHeader("Set-Cookie", "sessionId=; Max-Age=0; Path=/");
+  
+      return res.redirect("/login?expired=1");
+    }
+
     res.render('src/index', { messages });
 
 });
@@ -72,8 +83,8 @@ app.post("/login_form", async (req, res) => {
         if (userFound) {
             const sessionId = generateSessionId();
             await db.ref("Sessions/" + sessionId).set({
-            username: Username,
-            createdAt: Date.now()
+                username: Username,
+                createdAt: Date.now()
             });
             res.setHeader("Set-Cookie", `sessionId=${sessionId}; HttpOnly; Path=/`);
             res.redirect('/main');
