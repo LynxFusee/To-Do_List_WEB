@@ -94,7 +94,7 @@ app.post('/createList', async (req, res) => {
 
         // Trouver l'ID max
         const listIds = Object.keys(lists).map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-        const newListId = listIds.length ? Math.max(...listIds) + 1 : 0;
+        const newListId = listIds.length ? Math.max(...listIds) + 1 : 1;
 
         // Créer la nouvelle liste
         await db.ref(`Lists/${userId}/${newListId}`).set({
