@@ -41,7 +41,7 @@ html, body {
     margin: 0;
 }
   
-.login-btn {
+.disconnect-btn {
     background-color: var(--color-bloc);
     color: var(--color-text);
     border: none;
