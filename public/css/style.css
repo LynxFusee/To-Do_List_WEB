@@ -91,3 +91,23 @@ html, body {
 .content h1, .content p {
     color: var(--color-text);
 }
+
+.new-list-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.new-list-form input {
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.new-list-form button {
+    padding: 0.5rem;
+    background-color: #444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}

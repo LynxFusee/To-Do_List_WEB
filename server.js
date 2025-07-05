@@ -4,7 +4,8 @@ var app = express();
 const ONE_HOUR = 60 * 60 * 1000;
 app.use(express.static("public"));
 app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true}))
+app.use(express.urlencoded({ extended: true}));
+app.use(express.json());
 
 
 
@@ -16,7 +17,7 @@ function getSessionId(req) {
     const cookie = req.headers.cookie || "";
     const match = cookie.match(/sessionId=([^;]+)/);
     return match ? match[1] : null;
-}
+};
 
 app.get('/Disconnect', async (req, res) => {
     const sessionId = getSessionId(req);
@@ -28,36 +29,19 @@ app.get('/Disconnect', async (req, res) => {
 });
 
 app.get('/register', function (req, res){
-    res.render('src/register')
+    res.render('src/register');
 });
 
-async function loadList(listId) {
-    try {
-        const response = await fetch(`/api/list/${listId}`);
-        if (!response.ok) throw new Error('Erreur de chargement');
-  
-        const data = await response.json();
-  
-      // Par exemple, afficher les éléments dans #list-items-container
-        const container = document.getElementById('list-items-container');
-        container.innerHTML = ''; // vider le contenu
-  
-        data.items.forEach(item => {
-            const el = document.createElement('div');
-            el.textContent = `${item.name} - ${item.completed ? '✔' : '✘'}`;
-            container.appendChild(el);
-        });
-  
-    }   catch (err)     {
-        alert(err.message);
-    }
-}
+
 
 app.get('/api/list/:listId', async (req, res) => {
-    const userId = req.session.userId;
+    const sessionId = getSessionId(req);
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+    const userId = session.userId;
+    const listId = req.params.listId;
     if (!userId) return res.status(401).json({ error: 'Non autorisé' });
   
-    const listId = req.params.listId;
     try {
         const snapshot = await db.ref(`Lists/${userId}/${listId}`).once('value');
         const listData = snapshot.val();
@@ -65,9 +49,63 @@ app.get('/api/list/:listId', async (req, res) => {
         if (!listData) return res.status(404).json({ error: 'Liste non trouvée' });
   
       // Suppose que la structure des éléments est dans listData.items
-        res.json({ items: listData.items || [] });
+        res.json({ Items: listData.Items || [] });
     } catch (error) {
         res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+app.post('/api/list/:listId/add', async (req, res) => {
+    const sessionId = getSessionId(req);
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+    if (!session) return res.status(401).json({ error: 'Non autorisé' });
+
+    const userId = session.userId;
+    const listId = req.params.listId;
+    const { itemName } = req.body;
+
+    if (!itemName) return res.status(400).json({ error: 'Nom invalide' });
+
+    try {
+        await db.ref(`Lists/${userId}/${listId}/Items/${itemName}`).set(false); // par défaut, "non complété"
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+app.post('/createList', async (req, res) => {
+    const sessionId = getSessionId(req);
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+
+    if (!session) return res.redirect("/login");
+
+    const userId = session.userId;
+    const { listName } = req.body;
+    if (!listName || listName.trim() === "") {
+        return res.redirect("/main");
+    }
+
+    try {
+        const snapshot = await db.ref(`Lists/${userId}`).once('value');
+        const lists = snapshot.val() || {};
+
+        // Trouver l'ID max
+        const listIds = Object.keys(lists).map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+        const newListId = listIds.length ? Math.max(...listIds) + 1 : 0;
+
+        // Créer la nouvelle liste
+        await db.ref(`Lists/${userId}/${newListId}`).set({
+            name: listName,
+            Items: {}
+        });
+
+        res.redirect("/main");
+    } catch (err) {
+        console.error("Erreur lors de la création de liste :", err);
+        res.status(500).send("Erreur serveur");
     }
 });
 
@@ -144,6 +182,25 @@ app.post("/login_form", async (req, res) => {
     }
 });
 
+
+app.post('/api/list/:listId/toggle', async (req, res) => {
+    const sessionId = getSessionId(req);
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+    if (!session) return res.status(401).json({ error: 'Non autorisé' });
+
+    const userId = session.userId;
+    const { itemName, newState } = req.body;
+    const listId = req.params.listId;
+
+    try {
+        const itemRef = db.ref(`Lists/${userId}/${listId}/Items/${itemName}`);
+        await itemRef.set(newState);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
 
 
 app.listen(8080);

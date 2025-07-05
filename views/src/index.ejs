@@ -23,11 +23,20 @@
             <% Object.entries(lists).forEach(([listId, list]) => { %>
                 <button type="button" onclick="loadList(<%= Number(listId) %>)"><%= list.name %></button>
             <% }) %>
+            <form action="/createList" method="POST" class="new-list-form" style="margin-top: 2rem;">
+                <input type="text" name="listName" placeholder="Nom de la nouvelle liste" required />
+                <button type="submit">Créer la liste</button>
+            </form>
         </aside>
     
         <main class="content">
             <div id="list-items-container"></div>
+            <form id="add-item-form" style="margin-top: 2rem;">
+                <input type="text" id="new-item-name" placeholder="Nouvel élément..." required />
+                <button type="submit">Ajouter</button>
+            </form>
         </main>
     </div>
+    <script src="/js/index.js"></script>
 </body>
 </html>
