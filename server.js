@@ -16,11 +16,22 @@ app.get('/register', function (req, res){
     res.render('src/register')
 });
 
+function getSessionId(req) {
+    const cookie = req.headers.cookie || "";
+    const match = cookie.match(/sessionId=([^;]+)/);
+    return match ? match[1] : null;
+}
 
 app.get('/main', async (req, res) => {
     const snapshot = await db.ref("messages").once("value");
     const messages = snapshot.val() || {};
+    const sessionId = getSessionId(req);
+    if (!sessionId) return res.redirect("/login");
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+    if (!session) return res.redirect("/login");
     res.render('src/index', { messages });
+
 });
   
   // Traitement du formulaire
@@ -45,6 +56,10 @@ app.post("/register_form", async (req, res) => {
     res.redirect('/login');
 });
 
+function generateSessionId() {
+    return Date.now().toString() + "_" + Math.floor(Math.random() * 1000000);
+}
+
 app.post("/login_form", async (req, res) => {
     const { Username, Password } = req.body;
     try {
@@ -55,7 +70,14 @@ app.post("/login_form", async (req, res) => {
         );
 
         if (userFound) {
+            const sessionId = generateSessionId();
+            await db.ref("Sessions/" + sessionId).set({
+            username: Username,
+            createdAt: Date.now()
+            });
+            res.setHeader("Set-Cookie", `sessionId=${sessionId}; HttpOnly; Path=/`);
             res.redirect('/main');
+
         }   else   {
             res.redirect('/login?error=true');
         }
