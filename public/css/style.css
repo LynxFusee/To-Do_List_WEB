@@ -15,6 +15,25 @@ html, body {
     background-color: var(--color-bg);
     color: var(--color-text);
 }
+
+.items {
+    background: transparent;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.items-inner {
+    width: 90%;
+    max-width: 1000px;
+    background-color: var(--color-obj);
+    border-radius: 16px;
+    padding: 6px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
   
 .navbar {
     background: transparent;
@@ -110,4 +129,87 @@ html, body {
     border: none;
     cursor: pointer;
     border-radius: 4px;
+}
+
+.block{
+    display: flex;
+    padding: 20px;
+    margin : 10px;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+}
+
+.block-inner{
+    background-color: var(--color-obj);
+    margin: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+
+.block-middle{
+    background-color: var(--color-bloc);
+    margin: 10px;
+    padding: 6px 20px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input{
+    background-color: var(--color-bloc);
+    border-radius: 16px;
+    border-color: rgb(55, 55, 112);
+    color: white;
+    margin: 2px;
+    padding: 2px 6px;
+}
+.button{
+    background-color: oklch(58% 0.233 277.117);
+    border-radius: 16px;
+    margin: 2px;
+    padding: 2px 6px;
+    border-color: transparent;
+
+}
+.button:hover{
+    filter: brightness(1.1);
+}
+
+.list{
+    display:flex;
+    flex-direction: column;
+}
+
+
+.list-left,
+.list-center,
+.list-right {
+  flex: 1;
+}
+
+.list-left{
+    text-align: left;
+}
+
+.list-center{
+    text-align: center;
+}
+
+.list-right{
+    text-align: right;
+}
+.list-container{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }

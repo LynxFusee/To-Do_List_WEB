@@ -35,11 +35,15 @@ async function loadList(listId) {
         Object.entries(data.Items).forEach(([name, completed]) => {
             const el = document.createElement('div');
             el.innerHTML = `
-            <button onclick="toggleItem('${listId}', '${name}', ${completed})">
-                ${completed ? '✔' : '✘'}
-            </button>
-            - ${name}
-        `;
+                        <div class="list-container">
+                        <div class="list-left">
+                        <button class="button" onclick="toggleItem('${listId}', '${name}', ${completed})">
+                            ${completed ? '✔' : '✘'}
+                        </button>
+                        - </div><div class="list-center">${name}</div>
+                        <div class="list-right"><button onclick="console.log("test")">supprimer</button></div>
+                        </div>
+            `;
             container.appendChild(el);
         });
 
