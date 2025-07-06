@@ -84,7 +84,7 @@ html, body {
 }
   
 .sidebar {
-    width: 200px;
+    width: 400px;
     background-color: var(--color-bloc);
     color: var(--color-text);
     padding: 20px;
@@ -96,6 +96,11 @@ html, body {
 .sidebar h2,
 .sidebar ul li a {
     color: var(--color-text);
+}
+
+.sidebar-inner{
+    display: flex;
+    flex-direction: column;
 }
   
 .content {

@@ -32,7 +32,21 @@ app.get('/register', function (req, res){
     res.render('src/register');
 });
 
-
+app.delete(`/api/list/:listId/delete`, async (req, res) => {
+    const sessionId = getSessionId(req);
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+    const userId = session.userId;
+    const listId = req.params.listId;
+    if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+    try {
+        await db.ref(`Lists/${userId}/${listId}`).remove();
+        res.status(200).json({ succes: true});
+    } catch (error) {
+        console.error("Erreur de suppression:", error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
 
 app.get('/api/list/:listId', async (req, res) => {
     const sessionId = getSessionId(req);
@@ -202,6 +216,24 @@ app.post('/api/list/:listId/toggle', async (req, res) => {
     }
 });
 
+app.delete('/api/list/:listId/item/:itemName/delete', async (req, res) => {
+    const sessionId = getSessionId(req);
+    const sessionSnap = await db.ref("Sessions/" + sessionId).once("value");
+    const session = sessionSnap.val();
+    if (!session) return res.status(401).json({ error: "Non autorisé" });
+
+    const userId = session.userId;
+    const listId = req.params.listId;
+    const itemName =req.params.itemName;
+
+    try {
+        await db.ref(`Lists/${userId}/${listId}/Items/${itemName}`).remove();
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error("Erreur suppression:", error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
 
 app.listen(8080);
 console.log("8080 pour le port bg")

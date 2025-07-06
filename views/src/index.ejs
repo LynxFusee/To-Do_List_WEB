@@ -20,9 +20,12 @@
     <div class="layout">
         <aside class="sidebar">
             <h2>Les Listes</h2>
-            <% Object.entries(lists).forEach(([listId, list]) => { %>
-                <button type="button" onclick="loadList(<%= Number(listId) %>)"><%= list.name %></button>
-            <% }) %>
+            <div class="sidebar-inner">
+                <% Object.entries(lists).forEach(([listId, list]) => { %>
+                    <button class="button" type="button" onclick="loadList(<%= Number(listId) %>)"><%= list.name %></button>
+                    <button class="button" type="button" onclick="deleteList(<%= Number(listId) %>)">Delete</button>
+                <% }) %>    
+            </div>
             <form action="/createList" method="POST" class="new-list-form" style="margin-top: 2rem;">
                 <input type="text" name="listName" placeholder="Nom de la nouvelle liste" required />
                 <button type="submit">Créer la liste</button>

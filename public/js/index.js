@@ -20,6 +20,35 @@ async function toggleItem(listId, itemName, currentState) {
     }
 }
 
+async function deleteItem(listId, itemName) {
+    try {
+        const response = await fetch(`/api/list/${listId}/item/${itemName}/delete`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error("Erreur lors de la suppression");
+
+        // Recharge la liste après suppression
+        loadList(listId);
+    } catch (err) {
+        alert("Suppression échouée : " + err.message);
+    }
+}
+
+async function deleteList(listId){
+    try {
+
+        const response = await fetch(`/api/list/${listId}/delete`, {
+            method : 'DELETE'
+        });
+        console.log("test")
+        if (!response.ok) throw new Error("IL FAIS TARPIIIIINNN CHAUUUUUUD");
+        window.location.reload();
+    }   catch (err) {
+        alert("Impossible to Delete : Error Server")
+    }
+}
+
 let currentListId = null;
 
 async function loadList(listId) {
@@ -41,7 +70,8 @@ async function loadList(listId) {
                             ${completed ? '✔' : '✘'}
                         </button>
                         - </div><div class="list-center">${name}</div>
-                        <div class="list-right"><button onclick="console.log("test")">supprimer</button></div>
+                        <div class="list-right">
+                        <button class="button" onclick="deleteItem('${listId}', '${name}')">Supprimer</button></div>
                         </div>
             `;
             container.appendChild(el);
