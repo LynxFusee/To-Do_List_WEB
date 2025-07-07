@@ -185,7 +185,7 @@ app.post("/login_form", async (req, res) => {
                 userId: userId,
                 createdAt: Date.now()
             });
-            res.setHeader("Set-Cookie", `sessionId=${sessionId}; HttpOnly; Path=/`);
+            res.setHeader("Set-Cookie", `&sessionId=${sessionId}; HttpOnly; Path=/`);
             res.redirect('/main');
 
         }   else   {
